@@ -1,0 +1,29 @@
+{
+  "name": "educenter-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "ant-design-vue": "^4.2.6",
+    "axios": "^1.16.1",
+    "chart.js": "^4.5.1",
+    "pinia": "^2.3.1",
+    "vue": "^3.5.32",
+    "vuetify": "^3.7.16"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vite": "^8.0.8",
+    "vite-plugin-vue-devtools": "^8.1.1",
+    "vite-plugin-vuetify": "^2.0.4"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}
