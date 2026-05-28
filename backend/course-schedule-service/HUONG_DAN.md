@@ -1,0 +1,356 @@
+# ?? H??ng D?n C?u Hình Microservice Course & Schedule
+
+## ?? Tóm T?t Nh?ng Gì ?ã ???c Tri?n Khai
+
+Tôi ?ã hoàn thành xây d?ng Microservice "Course & Schedule" v?i ??y ?? các ch?c n?ng CRUD cho 3 entity: **Courses**, **Classes**, và **Schedules**.
+
+---
+
+## ?? B??C 1: C?u Hình Connection String
+
+### File: `appsettings.json`
+
+B?n c?n thay th? `YOUR_SERVER` b?ng tên máy ch? SQL Server th?c t? c?a b?n:
+
+```json
+"ConnectionStrings": {
+  "EduCenterConnection": "Server=YOUR_SERVER;Database=EduCenter_CourseDB;Trusted_Connection=true;TrustServerCertificate=true;"
+}
+```
+
+**Ví d? cho các tr??ng h?p khác nhau:**
+
+- **Máy c?c b? (Local):**
+  ```
+  Server=localhost;Database=EduCenter_CourseDB;Trusted_Connection=true;TrustServerCertificate=true;
+  ```
+
+- **Máy c?c b? v?i SQL Server Express:**
+  ```
+  Server=.\SQLEXPRESS;Database=EduCenter_CourseDB;Trusted_Connection=true;TrustServerCertificate=true;
+  ```
+
+- **Máy ch? t? xa (v?i User/Pass):**
+  ```
+  Server=192.168.1.100;Database=EduCenter_CourseDB;User Id=sa;Password=YourPassword;TrustServerCertificate=true;
+  ```
+
+---
+
+## ??? B??C 2: T?o Database và Migration
+
+### 2.1 M? Package Manager Console
+
+Trong Visual Studio:
+- **Tools** ? **NuGet Package Manager** ? **Package Manager Console**
+
+### 2.2 Ch?y l?nh Migration
+
+```powershell
+Add-Migration InitialCreate
+Update-Database
+```
+
+**Gi?i thích:**
+- `Add-Migration InitialCreate`: T?o file migration (mapping models thành database)
+- `Update-Database`: T?o database và các b?ng t? ??ng
+
+N?u thành công, b?n s? th?y:
+- Database `EduCenter_CourseDB` ???c t?o trong SQL Server
+- 3 b?ng ???c t?o: `Courses`, `Classes`, `Schedules`
+- D? li?u m?u ???c insert
+
+---
+
+## ??? B??C 3: C?u Trúc Project
+
+```
+CourseAndScheduleService/
+??? Models/
+?   ??? Course.cs          (Khóa h?c)
+?   ??? Class.cs           (L?p h?c)
+?   ??? Schedule.cs        (L?ch h?c)
+??? Data/
+?   ??? EduCenterDbContext.cs  (Entity Framework DbContext)
+??? Controllers/
+?   ??? CoursesController.cs    (CRUD Courses)
+?   ??? ClassesController.cs    (CRUD Classes)
+?   ??? SchedulesController.cs  (CRUD Schedules)
+??? Responses/
+?   ??? ApiResponse.cs     (Response format chung)
+??? appsettings.json       (C?u hình Connection String)
+??? Program.cs             (C?u hình Services & CORS)
+```
+
+---
+
+## ?? B??C 4: Các API Endpoints
+
+### **Courses API**
+
+| Method | Endpoint | Mô T? |
+|--------|----------|-------|
+| GET | `/api/courses` | L?y t?t c? khóa h?c |
+| GET | `/api/courses/{id}` | L?y khóa h?c theo ID |
+| POST | `/api/courses` | T?o khóa h?c m?i |
+| PUT | `/api/courses/{id}` | C?p nh?t khóa h?c |
+| DELETE | `/api/courses/{id}` | Xóa khóa h?c |
+
+#### Ví d? POST t?o khóa h?c:
+```json
+{
+  "courseName": "React Advanced",
+  "description": "H?c React hooks và state management",
+  "credits": 4,
+  "status": "Active"
+}
+```
+
+---
+
+### **Classes API**
+
+| Method | Endpoint | Mô T? |
+|--------|----------|-------|
+| GET | `/api/classes` | L?y t?t c? l?p h?c |
+| GET | `/api/classes/{id}` | L?y l?p h?c theo ID |
+| GET | `/api/classes/course/{courseId}` | L?y l?p c?a khóa h?c |
+| POST | `/api/classes` | T?o l?p h?c m?i |
+| PUT | `/api/classes/{id}` | C?p nh?t l?p h?c |
+| DELETE | `/api/classes/{id}` | Xóa l?p h?c |
+
+#### Ví d? POST t?o l?p:
+```json
+{
+  "classCode": "REACT01",
+  "courseID": 1,
+  "capacity": 40,
+  "enrolledStudents": 35,
+  "instructor": "Nguy?n V?n A",
+  "status": "Active"
+}
+```
+
+---
+
+### **Schedules API**
+
+| Method | Endpoint | Mô T? |
+|--------|----------|-------|
+| GET | `/api/schedules` | L?y t?t c? l?ch h?c |
+| GET | `/api/schedules/{id}` | L?y l?ch h?c theo ID |
+| GET | `/api/schedules/class/{classId}` | L?y l?ch c?a l?p |
+| GET | `/api/schedules/day/{dayOfWeek}` | L?y l?ch theo ngày |
+| POST | `/api/schedules` | T?o l?ch h?c m?i |
+| PUT | `/api/schedules/{id}` | C?p nh?t l?ch h?c |
+| DELETE | `/api/schedules/{id}` | Xóa l?ch h?c |
+
+#### Ví d? POST t?o l?ch:
+```json
+{
+  "classID": 1,
+  "startDate": "2024-01-15T00:00:00",
+  "endDate": "2024-05-15T00:00:00",
+  "dayOfWeek": "Monday",
+  "startTime": "08:00:00",
+  "endTime": "10:00:00",
+  "room": "A101",
+  "status": "Active"
+}
+```
+
+---
+
+## ?? B??C 5: Response Format Chung
+
+T?t c? API tr? v? format sau:
+
+### ? Success Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "L?y danh sách khóa h?c thành công",
+  "data": [
+    {
+      "courseID": 1,
+      "courseName": "C# Basics",
+      "description": "Khóa h?c c? b?n v? C# và .NET",
+      "credits": 3,
+      "status": "Active",
+      "createdDate": "2024-01-15T10:30:00",
+      "updatedDate": "2024-01-15T10:30:00",
+      "classes": []
+    }
+  ]
+}
+```
+
+### ? Error Response (400/404)
+```json
+{
+  "success": false,
+  "message": "Khóa h?c không t?n t?i",
+  "data": null
+}
+```
+
+---
+
+## ?? B??C 6: CORS ?ã ???c C?u Hình
+
+Trong `Program.cs`, tôi ?ã thêm CORS policy cho phép Frontend t? b?t k? origin nào g?i API:
+
+```csharp
+app.UseCors("AllowAll");
+```
+
+**?i?u này cho phép:**
+- ? G?i t? `http://localhost:3000` (React)
+- ? G?i t? `http://localhost:4200` (Angular)
+- ? G?i t? b?t k? domain nào
+
+---
+
+## ?? B??C 7: Ch?y ?ng D?ng
+
+### Cách 1: S? d?ng Visual Studio
+
+1. Nh?n **F5** ho?c **Debug** ? **Start Debugging**
+2. Swagger UI s? m? ?: `https://localhost:7xxx/swagger/index.html`
+3. Test các API tr?c ti?p trên Swagger UI
+
+### Cách 2: S? d?ng Terminal
+
+```powershell
+cd CourseAndScheduleService
+dotnet run
+```
+
+---
+
+## ?? B??C 8: Test API v?i Postman/Thunder Client
+
+### Test Create Course
+```
+POST: https://localhost:7xxx/api/courses
+Content-Type: application/json
+
+{
+  "courseName": "Python Basics",
+  "description": "Khóa h?c Python cho ng??i m?i",
+  "credits": 3,
+  "status": "Active"
+}
+```
+
+### Test Get All Courses
+```
+GET: https://localhost:7xxx/api/courses
+```
+
+### Test Update Course
+```
+PUT: https://localhost:7xxx/api/courses/1
+Content-Type: application/json
+
+{
+  "courseID": 1,
+  "courseName": "Python Basics Updated",
+  "description": "Khóa h?c Python cho ng??i m?i (Updated)",
+  "credits": 4,
+  "status": "Active"
+}
+```
+
+### Test Delete Course
+```
+DELETE: https://localhost:7xxx/api/courses/1
+```
+
+---
+
+## ?? Quan H? Database
+
+```
+???????????????????
+?     Courses     ?
+?  (CourseID) PK  ?
+???????????????????
+?  CourseID       ?
+?  CourseName     ?
+?  Description    ?
+?  Credits        ?
+?  Status         ?
+???????????????????
+         ?
+         ? 1:N (M?t khóa h?c có nhi?u l?p)
+         ?
+???????????????????
+?     Classes     ?
+?   (ClassID) PK  ?
+???????????????????
+?  ClassID        ?
+?  ClassCode      ?
+?  CourseID    FK ?????
+?  Capacity       ?
+?  Instructor     ?
+?  Status         ?
+???????????????????
+         ?
+         ? 1:N (M?t l?p có nhi?u l?ch)
+         ?
+???????????????????
+?   Schedules     ?
+? (ScheduleID) PK ?
+???????????????????
+?  ScheduleID     ?
+?  ClassID     FK ?????
+?  StartDate      ?
+?  EndDate        ?
+?  DayOfWeek      ?
+?  StartTime      ?
+?  EndTime        ?
+?  Room           ?
+?  Status         ?
+???????????????????
+```
+
+---
+
+## ?? Các Package ?ã Cài ??t
+
+- ? `Microsoft.EntityFrameworkCore` (8.0.0)
+- ? `Microsoft.EntityFrameworkCore.SqlServer` (8.0.0)
+- ? `Microsoft.EntityFrameworkCore.Tools` (8.0.0)
+- ? `Swashbuckle.AspNetCore` (6.6.2)
+
+---
+
+## ?? Ti?p Theo (Optional)
+
+Khi b?n mu?n thêm JWT Authentication, hãy:
+
+1. Cài ??t: `dotnet add package System.IdentityModel.Tokens.Jwt`
+2. T?o `AuthorizationAttribute` ?? check JWT
+3. Thêm `[Authorize]` trên Controllers
+
+---
+
+## ? Ghi Chú Quan Tr?ng
+
+1. **Connection String**: Thay `YOUR_SERVER` tr??c khi ch?y
+2. **Migration**: Ch?y `Update-Database` ?? t?o tables
+3. **CORS**: Hi?n ???c m? toàn b? - có th? c?u hình c? th? sau
+4. **Validation**: ?ã thêm validation cho StartTime < EndTime, StartDate < EndDate
+5. **Navigation Properties**: ???c Include trong queries ?? l?y d? li?u liên quan
+
+---
+
+## ?? Liên H? H? Tr?
+
+N?u g?p l?i:
+- Check Connection String trong `appsettings.json`
+- Ki?m tra Database ?ã t?o ch?a trong SQL Server
+- Xem l?i trong **Output window** c?a Visual Studio
+
+Chúc b?n thành công! ??
